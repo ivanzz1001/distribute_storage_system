@@ -1,20 +1,12 @@
 # Monitor paxos算法实现
 
 
+参看:
+
+- [ceph monitor----paxos算法](https://www.cnblogs.com/yi-mu-xi/p/10364841.html)
+
+- [ceph monitor paxos算法](https://blog.csdn.net/fight_01/article/details/111319178)
+
+
 ## 概念说明
 
-- ### Epoch
-ffff 
-
-
-- ### Proposal Number(PN)
-fff 
-
-
-- ### Version
-
-- ### 持久化
-
-- ### 其他需要持久化的数据结构
-
-- ### Ceph Paxos的几个状态
