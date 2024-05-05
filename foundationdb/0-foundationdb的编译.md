@@ -45,7 +45,7 @@ ninja -C build_output # If this crashes it probably ran out of memory. Try ninja
 >
 >注2: 将内存调整到6GB以上，否则链接fdbserver时可能会因内存不足导致链接失败
 
-经过长时间(约3天)的编译，我们大体来看看编译结果：
+经过长时间(约3天)的编译，我们大体来看看编译结果(编译后的二进制会放在 bin 目录下，lib库会放在 lib目录下)：
 <pre>
 # /tmp/build_output
 # ls
