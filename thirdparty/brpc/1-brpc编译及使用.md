@@ -628,6 +628,9 @@ set(DYNAMIC_LIB
 
 - [Undefined reference to absl and utf8_range during linking](https://github.com/protocolbuffers/protobuf/issues/12271)
 
+- [Cmake之深入理解find_package()的用法 ](https://www.cnblogs.com/lidabo/p/18175369)
+
+- [cmake之find_package命令详解](https://blog.csdn.net/new9232/article/details/129968089)
 
 3) 编译brpc
 <pre>
