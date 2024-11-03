@@ -641,7 +641,11 @@ set(DYNAMIC_LIB
 
 # make
 # make install
+# ls ../output-inst/
+bin  include  lib
 
+# ls ../output-inst/bin
+parallel_http  rpc_press  rpc_replay  rpc_view  trackme_server
 </pre>
 
 >注意：
