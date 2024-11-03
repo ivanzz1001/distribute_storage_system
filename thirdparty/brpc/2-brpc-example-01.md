@@ -11,7 +11,7 @@
 
 参看本目录中修改后的CMakeLists.txt文件
 
-
+>ps: ZLIB库的查找是依赖于cmake安装目录/usr/share/cmake-3.22/Modules/FindZLIB.cmake来进行的
 
 2) 执行如下脚本编译
 ```
