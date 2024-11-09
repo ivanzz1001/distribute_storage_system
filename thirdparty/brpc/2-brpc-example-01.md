@@ -4,6 +4,7 @@
 
 - [brpc官网](https://github.com/apache/brpc)
 
+- [brpc server](https://github.com/apache/brpc/blob/master/docs/cn/server.md)
 
 ## 1. echo_c++的编译及运行
 
