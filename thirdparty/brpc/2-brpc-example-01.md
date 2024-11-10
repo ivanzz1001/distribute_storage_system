@@ -6,6 +6,10 @@
 
 - [brpc server](https://github.com/apache/brpc/blob/master/docs/cn/server.md)
 
+- [baidu-std协议](https://github.com/apache/brpc/blob/master/docs/cn/baidu_std.md)
+
+- [Brpc 服务端收包源码分析](https://www.jianshu.com/p/6a12105c4725)
+
 ## 1. echo_c++的编译及运行
 
 1) 修改CMakeLists.txt
