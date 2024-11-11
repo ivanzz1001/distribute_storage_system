@@ -10,3 +10,5 @@
 - [protobuf官方网址](https://developers.google.com/protocol-buffers)
 
 - [github源码](https://github.com/protocolbuffers/protobuf)
+
+- [google protobuf 反射机制学习笔记](https://cchd0001.gitbooks.io/my-blog/content/protobufreflection.html)
