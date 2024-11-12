@@ -897,6 +897,18 @@ struct Metadata {
   const Reflection* reflection;
 };
 ```
-Reflection类似一个代理人的角色，可以帮忙做一些读写的操作。如下 SetString、GetString 函数。接着我们就来看看如何通过Refection来修改message的字段值。
+Reflection类似一个代理人的角色，可以帮忙做一些读写的操作。比如像下面的 SetString()、GetString()函数(src/google/protobuf/message.h)：
 
-### 5.1 
+```
+class PROTOBUF_EXPORT Reflection final {
+    std::string GetString(const Message& message,
+                        const FieldDescriptor* field) const;
+    void SetString(Message* message, const FieldDescriptor* field,
+                        std::string value) const;
+};
+```
+接着我们就来看看如何通过Refection来获取和设置message实例相关字段的值。不过在此之前，我们先介绍FieldDescriptor。
+
+### 5.1 字段索引(FieldDescriptor)
+
+我们在前面的「DescriptorPool索引的查询过程」一节中介绍了构建symbol 索引的过程，对于FieldDescriptor也是在那个时候构建的。
