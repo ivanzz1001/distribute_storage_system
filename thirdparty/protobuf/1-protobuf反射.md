@@ -866,5 +866,37 @@ EchoResponse* New(::google::protobuf::Arena* arena = nullptr) const final {
     return CreateMaybeMessage<EchoResponse>(arena);
 }
 ```
+### 4.3 通过MessageFactory()创建message实例
+前面我们讲到可以通过MessageFactory的如下方法获得prototype:
+```
+const google::protobuf::Message* prototype
+    = google::protobuf::MessageFactory::generated_factory()
+      ->GetPrototype(descriptor);
+```
+我们继续使用该prototype的New()方法就可以创建出真正的message实例了：
+```
+google::protobuf::Message* req_msg = prototype->New();
+```
 
+## 5. Reflection实现Message字段的修改
 
+上面我们讲解到可以通过MessageFactory创建出Message，但是所创建出来的message是一个 google::protobuf::Message 基类指针，我们还是无法操作具体的message实例成员。这就需要我们的Reflection出场了。
+
+通过Message的GetMetaData()方法我们就能获取到实际的message实例的MetaData:
+```
+  // Get a struct containing the metadata for the Message, which is used in turn
+  // to implement GetDescriptor() and GetReflection() above.
+  virtual Metadata GetMetadata() const = 0;
+```
+其中MetaData包含两个部分：Descriptor以及Reflection
+
+```
+// A container to hold message metadata.
+struct Metadata {
+  const Descriptor* descriptor;
+  const Reflection* reflection;
+};
+```
+Reflection类似一个代理人的角色，可以帮忙做一些读写的操作。如下 SetString、GetString 函数。接着我们就来看看如何通过Refection来修改message的字段值。
+
+### 5.1 
