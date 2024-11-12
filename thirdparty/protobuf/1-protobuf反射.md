@@ -582,3 +582,125 @@ bool DescriptorBuilder::AddSymbol(const std::string& full_name,
 
 
 ## 4. MessageFactory 索引
+
+和DescriptorPool索引的构建时机相同，程序启动的时候构建了一部分索引，而在使用（也就是查询的时候）还会触发构建完整的Message索引数据。
+
+### 4.1 MessageFactory索引的构建
+
+我们还是接着前面AddDescriptorsImpl()接口开始，这个函数是在程序启动的时候触发执行的：
+```
+void AddDescriptorsImpl(const DescriptorTable* table) {
+  // Reflection refers to the default fields so make sure they are initialized.
+  internal::InitProtobufDefaults();
+  internal::InitializeFileDescriptorDefaultInstances();
+
+  // Ensure all dependent descriptors are registered to the generated descriptor
+  // pool and message factory.
+  int num_deps = table->num_deps;
+  for (int i = 0; i < num_deps; i++) {
+    // In case of weak fields deps[i] could be null.
+    if (table->deps[i]) AddDescriptors(table->deps[i]);
+  }
+
+  // Register the descriptor of this file.
+  DescriptorPool::InternalAddGeneratedFile(table->descriptor, table->size);
+  MessageFactory::InternalRegisterGeneratedFile(table);
+}
+
+void MessageFactory::InternalRegisterGeneratedFile(
+    const google::protobuf::internal::DescriptorTable* table) {
+  GeneratedMessageFactory::singleton()->RegisterFile(table);
+}
+
+void GeneratedMessageFactory::RegisterFile(
+    const google::protobuf::internal::DescriptorTable* table) {
+  if (!files_.insert(table).second) {
+    ABSL_LOG(FATAL) << "File is already registered: " << table->filename;
+  }
+}
+```
+GeneratedMessageFactory 类的定义如下(src/google/protobuf/message.cc)，我们主要关注两个成员`type_map_`和`files_` ，但实际上最有用的是`type_map_` ，`files_`只是辅助作用。那为什么这里只是构建了 type_map_ 呢？笔者认为和 DescriptorPool 索引的原因是一样的，一个是内存占用原因，另一个是启动效率原因。
+
+```
+class GeneratedMessageFactory final : public MessageFactory {
+  void RegisterFile(const google::protobuf::internal::DescriptorTable* table);
+  void RegisterType(const Descriptor* descriptor, const Message* prototype);
+
+  // implements MessageFactory ---------------------------------------
+  const Message* GetPrototype(const Descriptor* type) override;
+
+  // Only written at static init time, so does not require locking.
+  absl::flat_hash_set<const google::protobuf::internal::DescriptorTable*,
+                      DescriptorByNameHash, DescriptorByNameEq>
+      files_;
+
+  absl::flat_hash_map<const Descriptor*, const Message*> type_map_
+      ABSL_GUARDED_BY(mutex_);
+};
+```
+### 4.2 MessageFactory索引的查询过程
+
+从开发者怎么使用说起吧。开发者一般是调用 GetPrototype 函数来获取Messgae 实例:
+
+```
+const google::protobuf::Message* prototype
+    = google::protobuf::MessageFactory::generated_factory()
+      ->GetPrototype(descriptor);
+```
+
+这里我们来看看MessageFactory::GetPrototype()的实现(src/google/protobuf/message.cc)：
+
+```
+const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
+  {
+    absl::ReaderMutexLock lock(&mutex_);
+    const Message* result = FindInTypeMap(type);
+    if (result != nullptr) return result;
+  }
+
+  // If the type is not in the generated pool, then we can't possibly handle
+  // it.
+  if (type->file()->pool() != DescriptorPool::generated_pool()) return nullptr;
+
+  // Apparently the file hasn't been registered yet.  Let's do that now.
+  const internal::DescriptorTable* registration_data =
+      FindInFileMap(type->file()->name());
+  if (registration_data == nullptr) {
+    ABSL_DLOG(FATAL) << "File appears to be in generated pool but wasn't "
+                        "registered: "
+                     << type->file()->name();
+    return nullptr;
+  }
+
+  absl::WriterMutexLock lock(&mutex_);
+
+  // Check if another thread preempted us.
+  const Message* result = FindInTypeMap(type);
+  if (result == nullptr) {
+    // Nope.  OK, register everything.
+    internal::RegisterFileLevelMetadata(registration_data);
+    // Should be here now.
+    result = FindInTypeMap(type);
+  }
+
+  if (result == nullptr) {
+    ABSL_DLOG(FATAL) << "Type appears to be in generated pool but wasn't "
+                     << "registered: " << type->full_name();
+  }
+
+  return result;
+}
+
+const Message* FindInTypeMap(const Descriptor* type)
+      ABSL_SHARED_LOCKS_REQUIRED(mutex_)
+  {
+    auto it = type_map_.find(type);
+    if (it == type_map_.end()) return nullptr;
+    return it->second;
+  }
+```
+从上面我们看到，在GetPrototype()中首先尝试调用FindInTypeMap()来进行查找，如果查找不到则调用internal::RegisterFileLevelMetadata()来对proto级别的文件进行注册。下面我们来看一下这个注册过程：
+
+```
+
+```
