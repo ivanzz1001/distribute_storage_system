@@ -702,5 +702,169 @@ const Message* FindInTypeMap(const Descriptor* type)
 从上面我们看到，在GetPrototype()中首先尝试调用FindInTypeMap()来进行查找，如果查找不到则调用internal::RegisterFileLevelMetadata()来对proto级别的文件进行注册。下面我们来看一下这个注册过程：
 
 ```
+void RegisterFileLevelMetadata(const DescriptorTable* table) {
+  AssignDescriptors(table);
+  RegisterAllTypesInternal(table->file_level_metadata, table->num_messages);
+}
+```
+
+这里又分成两步：
+
+- AssignDescriptors(): 为DescriptorTable中的file_level_metadata,file_level_enum_descriptors,file_level_service_descriptors指定descriptor
+
+- RegisterAllTypesInternal(): 注册所有类型的实力(instance)
+
+1） **AssignDescriptors()为DescriptorTable中相关字段指定descriptor**
 
 ```
+void AssignDescriptors(const DescriptorTable* table) {
+  MaybeInitializeLazyDescriptors(table);
+  absl::call_once(*table->once, AssignDescriptorsImpl, table, table->is_eager);
+}
+
+void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
+  // Ensure the file descriptor is added to the pool.
+  {
+    // This only happens once per proto file. So a global mutex to serialize
+    // calls to AddDescriptors.
+    static absl::Mutex mu{absl::kConstInit};
+    mu.Lock();
+    AddDescriptors(table);
+    mu.Unlock();
+  }
+  if (eager) {
+    // Normally we do not want to eagerly build descriptors of our deps.
+    // However if this proto is optimized for code size (ie using reflection)
+    // and it has a message extending a custom option of a descriptor with that
+    // message being optimized for code size as well. Building the descriptors
+    // in this file requires parsing the serialized file descriptor, which now
+    // requires parsing the message extension, which potentially requires
+    // building the descriptor of the message extending one of the options.
+    // However we are already updating descriptor pool under a lock. To prevent
+    // this the compiler statically looks for this case and we just make sure we
+    // first build the descriptors of all our dependencies, preventing the
+    // deadlock.
+    int num_deps = table->num_deps;
+    for (int i = 0; i < num_deps; i++) {
+      // In case of weak fields deps[i] could be null.
+      if (table->deps[i]) {
+        absl::call_once(*table->deps[i]->once, AssignDescriptorsImpl,
+                        table->deps[i],
+                        /*eager=*/true);
+      }
+    }
+  }
+
+  // Fill the arrays with pointers to descriptors and reflection classes.
+  const FileDescriptor* file =
+      DescriptorPool::internal_generated_pool()->FindFileByName(
+          table->filename);
+  ABSL_CHECK(file != nullptr);
+
+  MessageFactory* factory = MessageFactory::generated_factory();
+
+  AssignDescriptorsHelper helper(
+      factory, table->file_level_metadata, table->file_level_enum_descriptors,
+      table->schemas, table->default_instances, table->offsets);
+
+  for (int i = 0; i < file->message_type_count(); i++) {
+    helper.AssignMessageDescriptor(file->message_type(i));
+  }
+
+  for (int i = 0; i < file->enum_type_count(); i++) {
+    helper.AssignEnumDescriptor(file->enum_type(i));
+  }
+  if (file->options().cc_generic_services()) {
+    for (int i = 0; i < file->service_count(); i++) {
+      table->file_level_service_descriptors[i] = file->service(i);
+    }
+  }
+  MetadataOwner::Instance()->AddArray(table->file_level_metadata,
+                                      helper.GetCurrentMetadataPtr());
+}
+```
+我们在前面讲解使用DescriptorPool来构建索引的过程，通过DescriptorTable所构建出来的Descriptors只是加到了DescriptorPool中了。这里是从中取出各种Descriptor填充到DescriptorTable中的末尾三个字段中：
+
+```
+// This struct tries to reduce unnecessary padding.
+// The num_xxx might not be close to their respective pointer, but this saves
+// padding.
+struct PROTOBUF_EXPORT DescriptorTable {
+  mutable bool is_initialized;
+  bool is_eager;
+  int size;  // of serialized descriptor
+  const char* descriptor;
+  const char* filename;
+  absl::once_flag* once;
+  const DescriptorTable* const* deps;
+  int num_deps;
+  int num_messages;
+  const MigrationSchema* schemas;
+  const Message* const* default_instances;
+  const uint32_t* offsets;
+  // update the following descriptor arrays.
+  Metadata* file_level_metadata;
+  const EnumDescriptor** file_level_enum_descriptors;
+  const ServiceDescriptor** file_level_service_descriptors;
+};
+```
+
+2) **RegisterAllTypesInternal()注册所有类型的实例**
+
+C++从语言层面本身不支持反射，如何从message type创建出真正的实例对象呢？ RegisterAllTypesInternal()的做法就是为每一个Type Descriptor保存一个默认的instance:
+
+```
+// Separate function because it needs to be a friend of
+// Reflection
+void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
+  for (int i = 0; i < size; i++) {
+    const Reflection* reflection = file_level_metadata[i].reflection;
+    MessageFactory::InternalRegisterGeneratedMessage(
+        file_level_metadata[i].descriptor,
+        reflection->schema_.default_instance_);
+  }
+}
+
+void MessageFactory::InternalRegisterGeneratedMessage(
+    const Descriptor* descriptor, const Message* prototype) {
+  GeneratedMessageFactory::singleton()->RegisterType(descriptor, prototype);
+}
+
+void GeneratedMessageFactory::RegisterType(const Descriptor* descriptor,
+                                           const Message* prototype) {
+  ABSL_DCHECK_EQ(descriptor->file()->pool(), DescriptorPool::generated_pool())
+      << "Tried to register a non-generated type with the generated "
+         "type registry.";
+
+  // This should only be called as a result of calling a file registration
+  // function during GetPrototype(), in which case we already have locked
+  // the mutex.
+  mutex_.AssertHeld();
+  if (!type_map_.try_emplace(descriptor, prototype).second) {
+    ABSL_DLOG(FATAL) << "Type is already registered: "
+                     << descriptor->full_name();
+  }
+}
+```
+
+最终是把 prototype（也就是 reflection->schema.default_instance ）插入 type_map_ 表中。回到我们的echo_c++示例中，即是把如下两个instance插入到了`type_map_`表中：
+```
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EchoRequestDefaultTypeInternal _EchoRequest_default_instance_;
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 EchoResponseDefaultTypeInternal _EchoResponse_default_instance_;
+```
+
+因为Message 都实现了 New 函数，可以通过 default_instance->New()创建出 Message 实例。在echo_c++示例中有如下：
+
+```
+EchoRequest* New(::google::protobuf::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<EchoRequest>(arena);
+}
+EchoResponse* New(::google::protobuf::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<EchoResponse>(arena);
+}
+```
+
+
