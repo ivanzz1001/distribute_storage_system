@@ -536,7 +536,8 @@ fallback_database_->FindFileContainingSymbol(name_string,file_proto.get())
 接下来我们继续看BuildFileImpl()的实现：
 
 ```
-FileDescriptor* BuildFileImpl(const FileDescriptorProto& proto) {
+FileDescriptor* DescriptorBuilder::BuildFileImpl(
+    const FileDescriptorProto& proto, internal::FlatAllocator& alloc) {
   ...
   BUILD_ARRAY(proto, result, message_type, BuildMessage, nullptr);
   BUILD_ARRAY(proto, result, enum_type, BuildEnum, nullptr);
@@ -549,9 +550,10 @@ FileDescriptor* BuildFileImpl(const FileDescriptorProto& proto) {
 BuildFileImpl 会针对每个 message_type、enum_type、service、extension 构建索引，举一个 BuildMessage 的例子。
 
 ```
-void BuildMessage(const DescriptorProto& proto,
-                  const Descriptor* parent,
-                  Descriptor* result) {
+void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
+                                     const Descriptor* parent,
+                                     Descriptor* result,
+                                     internal::FlatAllocator& alloc) {
   ...
   BUILD_ARRAY(proto, result, oneof_decl, BuildOneof, result);
   BUILD_ARRAY(proto, result, field, BuildField, result);
@@ -911,4 +913,35 @@ class PROTOBUF_EXPORT Reflection final {
 
 ### 5.1 字段索引(FieldDescriptor)
 
-我们在前面的「DescriptorPool索引的查询过程」一节中介绍了构建symbol 索引的过程，对于FieldDescriptor也是在那个时候构建的。
+我们在前面的「DescriptorPool索引的查询过程」一节中介绍了构建symbol 索引的过程，对于FieldDescriptor也是在那个时候构建的:
+```
+void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
+                                     const Descriptor* parent,
+                                     Descriptor* result,
+                                     internal::FlatAllocator& alloc) {
+  ...
+  BUILD_ARRAY(proto, result, oneof_decl, BuildOneof, result);
+  BUILD_ARRAY(proto, result, field, BuildField, result);
+  BUILD_ARRAY(proto, result, nested_type, BuildMessage, result);
+  BUILD_ARRAY(proto, result, enum_type, BuildEnum, result);
+  BUILD_ARRAY(proto, result, extension_range, BuildExtensionRange, result);
+  BUILD_ARRAY(proto, result, extension, BuildExtension, result);
+  BUILD_ARRAY(proto, result, reserved_range, BuildReservedRange, result);
+  ...
+  AddSymbol(...);
+)
+
+void BuildField(const FieldDescriptorProto& proto, Descriptor* parent,
+                  FieldDescriptor* result, internal::FlatAllocator& alloc) {
+    BuildFieldOrExtension(proto, parent, result, false, alloc);
+}
+
+void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
+                                              Descriptor* parent,
+                                              FieldDescriptor* result,
+                                              bool is_extension,
+                                              internal::FlatAllocator& alloc) {
+    AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
+}
+
+```
