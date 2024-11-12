@@ -945,3 +945,256 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
 }
 
 ```
+下面我们来看看FieldDescriptor结构(src/google/protobuf/descriptor.h)：
+
+```
+// Describes a single field of a message.  To get the descriptor for a given
+// field, first get the Descriptor for the message in which it is defined,
+// then call Descriptor::FindFieldByName().  To get a FieldDescriptor for
+// an extension, do one of the following:
+// - Get the Descriptor or FileDescriptor for its containing scope, then
+//   call Descriptor::FindExtensionByName() or
+//   FileDescriptor::FindExtensionByName().
+// - Given a DescriptorPool, call DescriptorPool::FindExtensionByNumber() or
+//   DescriptorPool::FindExtensionByPrintableName().
+// Use DescriptorPool to construct your own descriptors.
+class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
+public:
+  typedef FieldDescriptorProto Proto;
+
+  // Identifies a field type.  0 is reserved for errors.  The order is weird
+  // for historical reasons.  Types 12 and up are new in proto2.
+  enum Type {
+    TYPE_DOUBLE = 1,    // double, exactly eight bytes on the wire.
+    TYPE_FLOAT = 2,     // float, exactly four bytes on the wire.
+    TYPE_INT64 = 3,     // int64, varint on the wire.  Negative numbers
+                        // take 10 bytes.  Use TYPE_SINT64 if negative
+                        // values are likely.
+    TYPE_UINT64 = 4,    // uint64, varint on the wire.
+    TYPE_INT32 = 5,     // int32, varint on the wire.  Negative numbers
+                        // take 10 bytes.  Use TYPE_SINT32 if negative
+                        // values are likely.
+    TYPE_FIXED64 = 6,   // uint64, exactly eight bytes on the wire.
+    TYPE_FIXED32 = 7,   // uint32, exactly four bytes on the wire.
+    TYPE_BOOL = 8,      // bool, varint on the wire.
+    TYPE_STRING = 9,    // UTF-8 text.
+    TYPE_GROUP = 10,    // Tag-delimited message.  Deprecated.
+    TYPE_MESSAGE = 11,  // Length-delimited message.
+
+    TYPE_BYTES = 12,     // Arbitrary byte array.
+    TYPE_UINT32 = 13,    // uint32, varint on the wire
+    TYPE_ENUM = 14,      // Enum, varint on the wire
+    TYPE_SFIXED32 = 15,  // int32, exactly four bytes on the wire
+    TYPE_SFIXED64 = 16,  // int64, exactly eight bytes on the wire
+    TYPE_SINT32 = 17,    // int32, ZigZag-encoded varint on the wire
+    TYPE_SINT64 = 18,    // int64, ZigZag-encoded varint on the wire
+
+    MAX_TYPE = 18,  // Constant useful for defining lookup tables
+                    // indexed by Type.
+  };
+
+  // Specifies the C++ data type used to represent the field.  There is a
+  // fixed mapping from Type to CppType where each Type maps to exactly one
+  // CppType.  0 is reserved for errors.
+  enum CppType {
+    CPPTYPE_INT32 = 1,     // TYPE_INT32, TYPE_SINT32, TYPE_SFIXED32
+    CPPTYPE_INT64 = 2,     // TYPE_INT64, TYPE_SINT64, TYPE_SFIXED64
+    CPPTYPE_UINT32 = 3,    // TYPE_UINT32, TYPE_FIXED32
+    CPPTYPE_UINT64 = 4,    // TYPE_UINT64, TYPE_FIXED64
+    CPPTYPE_DOUBLE = 5,    // TYPE_DOUBLE
+    CPPTYPE_FLOAT = 6,     // TYPE_FLOAT
+    CPPTYPE_BOOL = 7,      // TYPE_BOOL
+    CPPTYPE_ENUM = 8,      // TYPE_ENUM
+    CPPTYPE_STRING = 9,    // TYPE_STRING, TYPE_BYTES
+    CPPTYPE_MESSAGE = 10,  // TYPE_MESSAGE, TYPE_GROUP
+
+    MAX_CPPTYPE = 10,  // Constant useful for defining lookup tables
+                       // indexed by CppType.
+  };
+
+
+  // Identifies whether the field is optional, required, or repeated.  0 is
+  // reserved for errors.
+  enum Label {
+    LABEL_OPTIONAL = 1,  // optional
+    LABEL_REQUIRED = 2,  // required
+    LABEL_REPEATED = 3,  // repeated
+
+    MAX_LABEL = 3,  // Constant useful for defining lookup tables
+                    // indexed by Label.
+  };
+
+  //因为一个field 只有一个类型，所以使用内联结构，节省内存
+  union {
+    int32_t default_value_int32_t_;
+    int64_t default_value_int64_t_;
+    uint32_t default_value_uint32_t_;
+    uint64_t default_value_uint64_t_;
+    float default_value_float_;
+    double default_value_double_;
+    bool default_value_bool_;
+
+    mutable const EnumValueDescriptor* default_value_enum_;
+    const std::string* default_value_string_;
+    mutable std::atomic<const Message*> default_generated_instance_;
+  };
+};
+```
+
+### 5.2 利用反射访问字段的API
+
+结合 Reflection 来分析一下 field 的使用。我们来看如何通过Reflection来获取及设置一个Message字段的值。
+
+1) Reflection::GetString()
+
+我们来看看GetString()的实现(src/google/protobuf/generated_message_reflection.cc):
+```
+std::string Reflection::GetString(const Message& message,
+                                  const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(GetString, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetString(field->number(),
+                                              field->default_value_string());
+  } else {
+    if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+      return field->default_value_string();
+    }
+    switch (internal::cpp::EffectiveStringCType(field)) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          return std::string(*GetField<absl::Cord*>(message, field));
+        } else {
+          return std::string(GetField<absl::Cord>(message, field));
+        }
+      default:
+      case FieldOptions::STRING:
+        if (IsInlined(field)) {
+          return GetField<InlinedStringField>(message, field).GetNoArena();
+        } else {
+          const auto& str = GetField<ArenaStringPtr>(message, field);
+          return str.IsDefault() ? field->default_value_string() : str.Get();
+        }
+    }
+  }
+}
+
+// Template implementations of basic accessors.  Inline because each
+// template instance is only called from one location.  These are
+// used for all types except messages.
+template <typename Type>
+const Type& Reflection::GetField(const Message& message,
+                                 const FieldDescriptor* field) const {
+  return GetRaw<Type>(message, field);
+}
+
+template <typename Type>
+const Type& Reflection::GetRaw(const Message& message,
+                               const FieldDescriptor* field) const {
+  ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
+      << "Field = " << field->full_name();
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
+  if (!schema_.IsSplit(field)) {
+    return internal::GetConstRefAtOffset<Type>(message, field_offset);
+  }
+  const void* split = GetSplitField(&message);
+  if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
+    return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
+  }
+  return *internal::GetConstPointerAtOffset<Type>(split, field_offset);
+}
+```
+
+从上面我们可以看到最终肯定还是找到对应的偏移，来取处相应的值。
+
+2) Reflection::SetString()
+
+我们来看看SetString()的实现(src/google/protobuf/generated_message_reflection.cc):
+
+```
+void Reflection::SetString(Message* message, const FieldDescriptor* field,
+                           std::string value) const {
+  USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return MutableExtensionSet(message)->SetString(
+        field->number(), field->type(), std::move(value), field);
+  } else {
+    switch (internal::cpp::EffectiveStringCType(field)) {
+      case FieldOptions::CORD:
+        if (schema_.InRealOneof(field)) {
+          if (!HasOneofField(*message, field)) {
+            ClearOneof(message, field->containing_oneof());
+            *MutableField<absl::Cord*>(message, field) =
+                Arena::Create<absl::Cord>(message->GetArena());
+          }
+          *(*MutableField<absl::Cord*>(message, field)) = value;
+          break;
+        }
+        *MutableField<absl::Cord>(message, field) = value;
+        break;
+      default:
+      case FieldOptions::STRING: {
+        if (IsInlined(field)) {
+          const uint32_t index = schema_.InlinedStringIndex(field);
+          ABSL_DCHECK_GT(index, 0);
+          uint32_t* states =
+              &MutableInlinedStringDonatedArray(message)[index / 32];
+          uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
+          MutableField<InlinedStringField>(message, field)
+              ->Set(value, message->GetArena(),
+                    IsInlinedStringDonated(*message, field), states, mask,
+                    message);
+          break;
+        }
+
+        // Oneof string fields are never set as a default instance.
+        // We just need to pass some arbitrary default string to make it work.
+        // This allows us to not have the real default accessible from
+        // reflection.
+        if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
+          ClearOneof(message, field->containing_oneof());
+          MutableField<ArenaStringPtr>(message, field)->InitDefault();
+        }
+        MutableField<ArenaStringPtr>(message, field)
+            ->Set(std::move(value), message->GetArena());
+        break;
+      }
+    }
+  }
+}
+
+template <typename Type>
+Type* Reflection::MutableField(Message* message,
+                               const FieldDescriptor* field) const {
+  schema_.InRealOneof(field) ? SetOneofCase(message, field)
+                             : SetBit(message, field);
+  return MutableRaw<Type>(message, field);
+}
+
+template <typename Type>
+Type* Reflection::MutableRaw(Message* message,
+                             const FieldDescriptor* field) const {
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
+  if (!schema_.IsSplit(field)) {
+    return GetPointerAtOffset<Type>(message, field_offset);
+  }
+  PrepareSplitMessageForWrite(message);
+  void** split = MutableSplitField(message);
+  if (SplitFieldHasExtraIndirection(field)) {
+    return AllocIfDefault(field,
+                          *GetPointerAtOffset<Type*>(*split, field_offset),
+                          message->GetArena());
+  }
+  return GetPointerAtOffset<Type>(*split, field_offset);
+}
+```
+
+## 6. 总结
+
+通过前面的分析，我们基本上可以了解到protobuf实现反射的基本思路:
+
+- DescriptorPool利用DescriptorTable构建出proto file级别的Descriptors（包括: FileDescriptor,MessageDescriptor, EnumDescriptor, FieldDescriptor)
+
+- MessageFactory利用DescriptorTable构建出Message实例
+
+
+- Reflection利用message实例及其对应的FieldDecriptor来实现对具体field的读写
