@@ -51,4 +51,21 @@ Date:   Fri Oct 25 14:56:01 2024 +0800
     fix typo in example
 ```
 
-2) 
+2) 修改CMakeLists.txt文件 
+
+直接编译存在大量报错，使用本目录中提供的修改过的CMakeLists.txt文件
+
+2) 编译braft
+
+<pre>
+# mkdir build output-inst && cd build && pwd
+/root/cpp_proj/brpc-compile/braft/build
+
+
+# cmake -DBRPC_WITH_GLOG=ON -DLEVELDB_WITH_SNAPPY=1 -DCMAKE_PREFIX_PATH=/root/cpp_proj/brpc-compile/gflags/output-inst\;/root/cpp_proj/brpc-compile/glog/output-inst\;/root/cpp_proj/brpc-compile/googletest/output-inst\;/root/cpp_proj/brpc-compile/protobuf/output-inst\;/root/cpp_proj/brpc-compile/leveldb/output-inst\;/root/cpp_proj/brpc-compile/snappy/output-inst\;/root/cpp_proj/brpc-compile/brpc/output-inst -DCMAKE_INSTALL_PREFIX=/root/cpp_proj/brpc-compile/braft/output-inst ..
+
+# make
+# make install
+</pre>
+
+>ps: test目录很多单元测试跑不过，这里我们不编译

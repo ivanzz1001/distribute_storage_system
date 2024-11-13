@@ -99,7 +99,7 @@ v2.2.2
 # mkdir build output-inst && cd build && pwd
 /root/cpp_proj/brpc-compile/gflags/build
 
-# cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/root/cpp_proj/brpc-compile/gflags/output-inst ..
+# cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-fPIC" -DCMAKE_INSTALL_PREFIX=/root/cpp_proj/brpc-compile/gflags/output-inst ..
 # make
 # make install
 
@@ -374,7 +374,7 @@ snappy的github官方地址：https://github.com/google/snappy
 </pre>
 # mkdir build output-inst && cd build && pwd
 /root/cpp_proj/brpc-compile/snappy/build
-# cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF -DCMAKE_PREFIX_PATH=/root/cpp_proj/brpc-compile/googletest/output-inst -DCMAKE_INSTALL_PREFIX=/root/cpp_proj/brpc-compile/snappy/output-inst ..
+# cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF -DCMAKE_CXX_FLAGS="-fPIC" -DCMAKE_PREFIX_PATH=/root/cpp_proj/brpc-compile/googletest/output-inst -DCMAKE_INSTALL_PREFIX=/root/cpp_proj/brpc-compile/snappy/output-inst ..
 # make
 # make install
 # tree ../output-inst/
