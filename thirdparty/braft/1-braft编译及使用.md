@@ -66,6 +66,62 @@ Date:   Fri Oct 25 14:56:01 2024 +0800
 
 # make
 # make install
+# tree ../output-inst/
+../output-inst/
+├── include
+│   └── braft
+│       ├── ballot_box.h
+│       ├── ballot.h
+│       ├── builtin_service_impl.h
+│       ├── builtin_service.pb.h
+│       ├── cli.h
+│       ├── cli.pb.h
+│       ├── cli_service.h
+│       ├── closure_helper.h
+│       ├── closure_queue.h
+│       ├── configuration.h
+│       ├── configuration_manager.h
+│       ├── enum.pb.h
+│       ├── errno.pb.h
+│       ├── file_reader.h
+│       ├── file_service.h
+│       ├── file_service.pb.h
+│       ├── file_system_adaptor.h
+│       ├── fsm_caller.h
+│       ├── fsync.h
+│       ├── lease.h
+│       ├── local_file_meta.pb.h
+│       ├── local_storage.pb.h
+│       ├── log_entry.h
+│       ├── log.h
+│       ├── log_manager.h
+│       ├── macros.h
+│       ├── memory_log.h
+│       ├── node.h
+│       ├── node_manager.h
+│       ├── protobuf_file.h
+│       ├── raft.h
+│       ├── raft_meta.h
+│       ├── raft.pb.h
+│       ├── raft_service.h
+│       ├── remote_file_copier.h
+│       ├── repeated_timer_task.h
+│       ├── replicator.h
+│       ├── route_table.h
+│       ├── snapshot_executor.h
+│       ├── snapshot.h
+│       ├── snapshot_throttle.h
+│       ├── storage.h
+│       └── util.h
+└── lib
+    ├── libbraft.a
+    └── libbraft.so
+
+3 directories, 45 files
+
+# find ./ -name braft_cli
+./tools/output/bin/braft_cli
+./tools/output/bin/braft_cli
 </pre>
 
 >ps: test目录很多单元测试跑不过，这里我们不编译
