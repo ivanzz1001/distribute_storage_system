@@ -55,6 +55,12 @@ Date:   Fri Oct 25 14:56:01 2024 +0800
 
 直接编译存在大量报错，使用本目录中提供的修改过的CMakeLists.txt文件
 
+同时需要修改test/test_node.cpp文件，将如下行注掉：
+```
+//butil::ShadowingAtExitManager exit_manager_
+```
+
+
 2) 编译braft
 
 <pre>
@@ -62,7 +68,7 @@ Date:   Fri Oct 25 14:56:01 2024 +0800
 /root/cpp_proj/brpc-compile/braft/build
 
 
-# cmake -DBRPC_WITH_GLOG=ON -DLEVELDB_WITH_SNAPPY=1 -DCMAKE_PREFIX_PATH=/root/cpp_proj/brpc-compile/gflags/output-inst\;/root/cpp_proj/brpc-compile/glog/output-inst\;/root/cpp_proj/brpc-compile/googletest/output-inst\;/root/cpp_proj/brpc-compile/protobuf/output-inst\;/root/cpp_proj/brpc-compile/leveldb/output-inst\;/root/cpp_proj/brpc-compile/snappy/output-inst\;/root/cpp_proj/brpc-compile/brpc/output-inst -DCMAKE_INSTALL_PREFIX=/root/cpp_proj/brpc-compile/braft/output-inst ..
+# cmake -DBRPC_WITH_GLOG=ON -DBUILD_UNIT_TESTS=1 -DLEVELDB_WITH_SNAPPY=1 -DCMAKE_PREFIX_PATH=/root/cpp_proj/brpc-compile/gflags/output-inst\;/root/cpp_proj/brpc-compile/glog/output-inst\;/root/cpp_proj/brpc-compile/googletest/output-inst\;/root/cpp_proj/brpc-compile/protobuf/output-inst\;/root/cpp_proj/brpc-compile/leveldb/output-inst\;/root/cpp_proj/brpc-compile/snappy/output-inst\;/root/cpp_proj/brpc-compile/brpc/output-inst -DCMAKE_INSTALL_PREFIX=/root/cpp_proj/brpc-compile/braft/output-inst ..
 
 # make
 # make install
@@ -123,5 +129,3 @@ Date:   Fri Oct 25 14:56:01 2024 +0800
 ./tools/output/bin/braft_cli
 ./tools/output/bin/braft_cli
 </pre>
-
->ps: test目录很多单元测试跑不过，这里我们不编译
