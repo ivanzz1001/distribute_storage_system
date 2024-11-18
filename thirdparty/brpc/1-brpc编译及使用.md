@@ -371,7 +371,7 @@ snappy的github官方地址：https://github.com/google/snappy
 
 2) 编译snappy
 
-</pre>
+<pre>
 # mkdir build output-inst && cd build && pwd
 /root/cpp_proj/brpc-compile/snappy/build
 # cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DSNAPPY_BUILD_TESTS=OFF -DSNAPPY_BUILD_BENCHMARKS=OFF -DCMAKE_CXX_FLAGS="-fPIC" -DCMAKE_PREFIX_PATH=/root/cpp_proj/brpc-compile/googletest/output-inst -DCMAKE_INSTALL_PREFIX=/root/cpp_proj/brpc-compile/snappy/output-inst ..
