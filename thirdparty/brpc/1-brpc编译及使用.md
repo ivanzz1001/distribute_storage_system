@@ -483,6 +483,7 @@ protobuf的github官方地址: https://github.com/protocolbuffers/protobuf
 # git submodule update --init --recursive
 # git tag
 # git checkout tags/v4.25.0
+# git submodule update --init --recursive
 </pre>
 
 2) 编译protobuf
