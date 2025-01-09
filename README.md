@@ -11,3 +11,7 @@
 - [分布式存储技术：总结2023，展望2024](https://zhuanlan.zhihu.com/p/682996102)
 
 - [存储论文AZure Storage重读笔记](https://zhuanlan.zhihu.com/p/158762176)
+
+- [JuiceFS框架介绍和读写流程解析](https://blog.51cto.com/u_15069482/4357154)
+
+- [juicefs社区版文档](https://juicefs.com/docs/zh/community/architecture)
