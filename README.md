@@ -15,3 +15,5 @@
 - [JuiceFS框架介绍和读写流程解析](https://blog.51cto.com/u_15069482/4357154)
 
 - [juicefs社区版文档](https://juicefs.com/docs/zh/community/architecture)
+
+- [go-fuse](https://github.com/hanwen/go-fuse)
