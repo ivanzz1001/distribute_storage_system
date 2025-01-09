@@ -17,3 +17,5 @@
 - [juicefs社区版文档](https://juicefs.com/docs/zh/community/architecture)
 
 - [go-fuse](https://github.com/hanwen/go-fuse)
+
+- [一个基于Fuse实现的简单文件系统](https://zhuanlan.zhihu.com/p/621112625)
