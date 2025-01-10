@@ -19,3 +19,5 @@
 - [go-fuse](https://github.com/hanwen/go-fuse)
 
 - [一个基于Fuse实现的简单文件系统](https://zhuanlan.zhihu.com/p/621112625)
+
+- [fuse介绍](https://www.a-programmer.top/2021/10/05/FUSE%E4%BB%8B%E7%BB%8D/)
