@@ -66,6 +66,71 @@
 
 - 可作为负载缓冲或冗余备份进程
 
+## 3.3 如何查询stateless进程当前处于何种角色
+
+在 FoundationDB 中，Stateless 进程是否被分配为某种角色（如 proxy、resolver、log 等），可以通过 查看 FoundationDB 的 status json 信息 来判断。
+
+### 方法：使用 fdbcli 查看进程角色
+
+你可以通过以下命令获取集群的完整状态：
+
+```bash
+# fdbcli --exec "status json" > status.json
+```
+
+### 如何判断 Stateless 进程当前的角色？
+
+解析 status.json 中的：
+
+```text
+cluster > processes > [process_id] > roles
+```
+
+**示例：**
+
+```text
+{
+  "127.0.0.1:4500": {
+    "class_source": "command_line",
+    "class_type": "stateless",
+    "roles": [
+      {
+        "role": "log"
+      },
+      {
+        "role": "commit_proxy"
+      }
+    ]
+  }
+}
+```
+
+在这个例子中，127.0.0.1:4500 虽然进程 class 是 stateless，但它当前被动态分配为了：
+
+- log
+
+- commit_proxy
+
+**说明：**
+
+- 这说明 stateless 并不代表“空闲”，而是“无特定指定角色”，系统可根据负载自动指派角色。
+
+- roles 数组显示了进程当前实际承担的角色。
+
+### 所有可能的角色类型
+- commit_proxy
+- grv_proxy
+- resolver
+- log
+- storage
+- coordinator
+- cluster_controller
+- ratekeeper
+- data_distributor
+- master
+-（未分配则 roles 为空）
+
+
 # 4. 对比总结
 
 | 角色          | 主要职责              | 是否持久化     | 是否参与事务  | 数据访问类型    |
