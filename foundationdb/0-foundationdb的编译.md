@@ -8,6 +8,8 @@
 
 - [foundationdb官网](https://www.foundationdb.org/)
 
+- [site map](https://apple.github.io/foundationdb/contents.html?highlight=log+server)
+
 
 ## 1. 使用docker编译foundationdb
 
