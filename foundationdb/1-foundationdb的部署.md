@@ -16,6 +16,8 @@
 
 - [GCDW元数据服务FoundationDB的集群模式配置和高可用测试](https://www.modb.pro/db/445779)
 
+- [foundationdb configuration](https://apple.github.io/foundationdb/configuration.html#the-configuration-file)
+
 当前操作系统: Ubuntu22.04
 
 
