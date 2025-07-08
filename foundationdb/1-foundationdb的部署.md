@@ -18,6 +18,8 @@
 
 - [foundationdb configuration](https://apple.github.io/foundationdb/configuration.html#the-configuration-file)
 
+- [foundationDB forum](https://forums.foundationdb.org/)
+
 当前操作系统: Ubuntu22.04
 
 
