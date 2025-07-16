@@ -12,6 +12,8 @@
 
 - [known limitations](https://apple.github.io/foundationdb/known-limitations.html)
 
+- [cpu too high](https://forums.foundationdb.org/t/why-many-clientthreads-will-cause-fdbserver-stateless-grv-proxy-cpu-too-high/4969/4)
+
 
 ## 1. 使用docker编译foundationdb
 
