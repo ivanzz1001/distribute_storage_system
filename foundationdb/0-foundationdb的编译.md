@@ -10,6 +10,8 @@
 
 - [site map](https://apple.github.io/foundationdb/contents.html?highlight=log+server)
 
+- [known limitations](https://apple.github.io/foundationdb/known-limitations.html)
+
 
 ## 1. 使用docker编译foundationdb
 
