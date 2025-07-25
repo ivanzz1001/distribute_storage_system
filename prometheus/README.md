@@ -25,3 +25,4 @@
 
 - [Grafana 中文入门教程 | 构建你的第一个仪表盘](https://cloud.tencent.com/developer/article/1807679)
 
+- [模板化Dashboard](https://doc.cncf.vip/prometheus-handbook/part-ii-prometheus-jin-jie/grafana/templating)
