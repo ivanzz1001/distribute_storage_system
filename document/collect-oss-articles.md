@@ -23,3 +23,5 @@
 - [foundationdb exporter](https://github.com/aikoven/foundationdb-exporter)
 
 - [golang lru](github.com/hashicorp/golang-lru)
+
+- [prometheus golang client](github.com/prometheus/client_golang/prometheus)
