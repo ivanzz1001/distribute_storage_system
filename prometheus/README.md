@@ -20,3 +20,8 @@
 - [运维观止：监控相关](https://wiki.eryajf.net/pages/2477.html#_3-%E5%AF%BC%E5%85%A5-dashboard-%E6%A8%A1%E6%9D%BF)
 
 - [grafana documentation](https://grafana.com/docs/grafana/latest/)
+
+- [仪表盘市场](https://grafana.com/grafana/dashboards/)
+
+- [Grafana 中文入门教程 | 构建你的第一个仪表盘](https://cloud.tencent.com/developer/article/1807679)
+
