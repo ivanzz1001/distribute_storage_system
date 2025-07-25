@@ -9,3 +9,5 @@
 - [grafana datasources](https://grafana.com/docs/grafana/latest/datasources/prometheus/)
 
 - [prometheus golang client](github.com/prometheus/client_golang/prometheus)
+
+- [prometheus golang_client document](https://pkg.go.dev/github.com/prometheus/client_golang/prometheus)
