@@ -16,3 +16,7 @@
 - [prometheus golang client](github.com/prometheus/client_golang/prometheus)
 
 - [prometheus golang_client document](https://pkg.go.dev/github.com/prometheus/client_golang/prometheus)
+
+- [运维观止：监控相关](https://wiki.eryajf.net/pages/2477.html#_3-%E5%AF%BC%E5%85%A5-dashboard-%E6%A8%A1%E6%9D%BF)
+
+- [grafana documentation](https://grafana.com/docs/grafana/latest/)
