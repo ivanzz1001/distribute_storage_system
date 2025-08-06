@@ -2,6 +2,8 @@
 
 - [wrk压测工具](https://github.com/wg/wrk/tree/master)
 
+- [rclone](https://rclone.org/downloads/)
+
 - [gorilla mux](https://github.com/gorilla/mux)
 
 - [golang限流相关](golang.org/x/time/rate)
