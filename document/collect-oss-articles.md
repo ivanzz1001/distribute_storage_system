@@ -4,6 +4,8 @@
 
 - [rclone](https://rclone.org/downloads/)
 
+- [rclone github](https://github.com/rclone/rclone/tree/master/docs)
+
 - [gorilla mux](https://github.com/gorilla/mux)
 
 - [golang限流相关](golang.org/x/time/rate)
