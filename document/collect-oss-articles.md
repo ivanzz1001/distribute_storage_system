@@ -1,5 +1,7 @@
 # 存储相关文章收集
 
+- [base64转16进制工具](https://tool.hiofd.com/base64-convert-hex-online/)
+
 - [wrk压测工具](https://github.com/wg/wrk/tree/master)
 
 - [rclone](https://rclone.org/downloads/)
@@ -13,8 +15,6 @@
 - [web framework benchmark](https://web-frameworks-benchmark.netlify.app/result?asc=0&l=go&metric=totalRequestsPerS&order_by=level512)
 
 - [cosbench](https://github.com/intel-cloud/cosbench)
-
-- [rclone](https://github.com/rclone/rclone)
 
 - [zap log](go.uber.org/zap)
 
