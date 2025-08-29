@@ -21,3 +21,5 @@
 - [一个基于Fuse实现的简单文件系统](https://zhuanlan.zhihu.com/p/621112625)
 
 - [fuse介绍](https://www.a-programmer.top/2021/10/05/FUSE%E4%BB%8B%E7%BB%8D/)
+
+- [Read Paper](https://www.bilibili.com/video/BV1834y1Y7m7/)
