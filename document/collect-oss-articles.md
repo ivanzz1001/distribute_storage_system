@@ -29,3 +29,9 @@
 - [golang lru](github.com/hashicorp/golang-lru)
 
 - [prometheus golang client](github.com/prometheus/client_golang/prometheus)
+
+- [s3tester工具](https://github.com/s3tester/s3tester)
+
+- [如何对minio进行性能测试和分析](https://cloud.tencent.com/developer/article/2235817)
+
+- [minio warp](https://github.com/minio/warp)
