@@ -35,3 +35,5 @@
 - [如何对minio进行性能测试和分析](https://cloud.tencent.com/developer/article/2235817)
 
 - [minio warp](https://github.com/minio/warp)
+
+- [crushstore参考](https://github.com/andrewchambers/crushstore.git)
