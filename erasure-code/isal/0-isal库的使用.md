@@ -56,40 +56,40 @@ ec_encode_data_base
 
     这里可以简单看下行列式的乘法实现：
 
-  ```
-  // Generate EC parity blocks from sources
-  ec_encode_data(len, k, p, g_tbls, frag_ptrs, &frag_ptrs[k]);
-  
-  
-  void ec_encode_data(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
-                 unsigned char **dest)
-  {
-          ec_encode_data_base(len, srcs, dests, v, src, dest);
-  }
-  
-  void
-  ec_encode_data_base(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
-                      unsigned char **dest)
-  {
-          int i, j, l;
-          unsigned char s;
-  
-          for (l = 0; l < dests; l++) {
-                  for (i = 0; i < len; i++) {
-                          s = 0;
-                          for (j = 0; j < srcs; j++)
-                                  s ^= gf_mul(src[j][i], v[j * 32 + l * srcs * 32 + 1]);
-  
-                          dest[l][i] = s;
-                  }
-          }
-  }
-  ```
+    ```
+      // Generate EC parity blocks from sources
+      ec_encode_data(len, k, p, g_tbls, frag_ptrs, &frag_ptrs[k]);
+      
+      
+      void ec_encode_data(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
+                     unsigned char **dest)
+      {
+              ec_encode_data_base(len, srcs, dests, v, src, dest);
+      }
+      
+      void
+      ec_encode_data_base(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
+                          unsigned char **dest)
+      {
+              int i, j, l;
+              unsigned char s;
+      
+              for (l = 0; l < dests; l++) {
+                      for (i = 0; i < len; i++) {
+                              s = 0;
+                              for (j = 0; j < srcs; j++)
+                                      s ^= gf_mul(src[j][i], v[j * 32 + l * srcs * 32 + 1]);
+      
+                              dest[l][i] = s;
+                      }
+              }
+      }
+    ```
 
-![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0005.jpg)
+    ![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0005.jpg)
 
 
-从上面可以看到校验块(128K)的第`i`个字节，就是用8个src块(ps: 每个块128KB)的第`i`个字节，分别与g_tbls的8个块(ps: 每个块32字节）中的第一个字节进行`gf_mul`运算所得。
+    从上面可以看到校验块(128K)的第`i`个字节，就是用8个src块(ps: 每个块128KB)的第`i`个字节，分别与g_tbls的8个块(ps: 每个块32字节）中的第一个字节进行`gf_mul`运算所得。
 
 
 ### 1.2 解码
