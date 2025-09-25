@@ -90,7 +90,7 @@ ec_encode_data_base(int len, int srcs, int dests, unsigned char *v, unsigned cha
 ![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0005.jpg)
 
 
-从上面可以看到校验快(128K)的第`i`个字节，就是用8个src块(ps: 每个块128KB)的第`i`个字节，分别与g_tbls的8个块(ps: 每个块32字节）中的第一个字节进行`gf_mul`运算所得。
+从上面可以看到校验块(128K)的第`i`个字节，就是用8个src块(ps: 每个块128KB)的第`i`个字节，分别与g_tbls的8个块(ps: 每个块32字节）中的第一个字节进行`gf_mul`运算所得。
 
 
 ### 1.2 解码
