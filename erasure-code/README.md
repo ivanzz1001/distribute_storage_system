@@ -9,3 +9,5 @@
 - [纠删码(erasure code)介绍](https://zhuanlan.zhihu.com/p/554262696)
 
 - [erasure code: isa-l库使用](https://blog.csdn.net/wsqyz/article/details/142322571)
+
+- [rlnc](https://github.com/itzmeanjan/rlnc)
