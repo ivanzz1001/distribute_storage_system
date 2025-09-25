@@ -34,58 +34,57 @@ ec_encode_data_base
 
 1. **gf_gen_cauchy1_matrix**
 
-基于柯西矩阵来生成编码矩阵。编码矩阵用一个`m*k`字节长度的buff来存放，生成的编码矩阵如下：
+    基于柯西矩阵来生成编码矩阵。编码矩阵用一个`m*k`字节长度的buff来存放，生成的编码矩阵如下：
 
-![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0002.jpg)
+    ![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0002.jpg)
 
->ps: encode-matrix每个数据块的大小为1字节
+    >ps: encode-matrix每个数据块的大小为1字节
 
 2. **ec_init_tables_base**
 
-本函数根据编码矩阵`encode-matrix`的校验块部分（上图中的浅粉色数据块）生成`g_tbls`:
+    本函数根据编码矩阵`encode-matrix`的校验块部分（上图中的浅粉色数据块）生成`g_tbls`:
 
-![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0003.jpg)
+    ![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0003.jpg)
 
->ps: t_tbls每个数据块的大小为32字节
+    >ps: t_tbls每个数据块的大小为32字节
 
 3. **ec_encode_data_base**
 
-使用g_tbls对数据进行编码:
+    使用g_tbls对数据进行编码:
 
-![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0004.jpg)
+    ![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0004.jpg)
 
-这里可以简单看下行列式的乘法实现：
+    这里可以简单看下行列式的乘法实现：
 
-```
-// Generate EC parity blocks from sources
-ec_encode_data(len, k, p, g_tbls, frag_ptrs, &frag_ptrs[k]);
-
-
-void ec_encode_data(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
-               unsigned char **dest)
-{
-        ec_encode_data_base(len, srcs, dests, v, src, dest);
-}
-
-void
-ec_encode_data_base(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
-                    unsigned char **dest)
-{
-        int i, j, l;
-        unsigned char s;
-
-        for (l = 0; l < dests; l++) {
-                for (i = 0; i < len; i++) {
-                        s = 0;
-                        for (j = 0; j < srcs; j++)
-                                s ^= gf_mul(src[j][i], v[j * 32 + l * srcs * 32 + 1]);
-
-                        dest[l][i] = s;
-                }
-        }
-}
-
-```
+  ```
+  // Generate EC parity blocks from sources
+  ec_encode_data(len, k, p, g_tbls, frag_ptrs, &frag_ptrs[k]);
+  
+  
+  void ec_encode_data(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
+                 unsigned char **dest)
+  {
+          ec_encode_data_base(len, srcs, dests, v, src, dest);
+  }
+  
+  void
+  ec_encode_data_base(int len, int srcs, int dests, unsigned char *v, unsigned char **src,
+                      unsigned char **dest)
+  {
+          int i, j, l;
+          unsigned char s;
+  
+          for (l = 0; l < dests; l++) {
+                  for (i = 0; i < len; i++) {
+                          s = 0;
+                          for (j = 0; j < srcs; j++)
+                                  s ^= gf_mul(src[j][i], v[j * 32 + l * srcs * 32 + 1]);
+  
+                          dest[l][i] = s;
+                  }
+          }
+  }
+  ```
 
 ![erasure-encode](https://raw.githubusercontent.com/ivanzz1001/distribute_storage_system/master/erasure-code/isal/image/erasure-encode-0005.jpg)
 
