@@ -32,7 +32,7 @@ ec_init_tables_base
 ec_encode_data_base
 ```
 
-1) **gf_gen_cauchy1_matrix**
+1. **gf_gen_cauchy1_matrix**
 
 基于柯西矩阵来生成编码矩阵。编码矩阵用一个`m*k`字节长度的buff来存放，生成的编码矩阵如下：
 
@@ -40,7 +40,7 @@ ec_encode_data_base
 
 >ps: encode-matrix每个数据块的大小为1字节
 
-2) **ec_init_tables_base**
+2. **ec_init_tables_base**
 
 本函数根据编码矩阵`encode-matrix`的校验块部分（上图中的浅粉色数据块）生成`g_tbls`:
 
@@ -48,7 +48,7 @@ ec_encode_data_base
 
 >ps: t_tbls每个数据块的大小为32字节
 
-3) **ec_encode_data_base**
+3. **ec_encode_data_base**
 
 使用g_tbls对数据进行编码:
 
