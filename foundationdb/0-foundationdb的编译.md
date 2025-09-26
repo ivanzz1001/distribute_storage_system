@@ -8,6 +8,8 @@
 
 - [foundationdb官网](https://www.foundationdb.org/)
 
+- [architecture](https://apple.github.io/foundationdb/architecture.html)
+
 - [site map](https://apple.github.io/foundationdb/contents.html?highlight=log+server)
 
 - [known limitations](https://apple.github.io/foundationdb/known-limitations.html)
