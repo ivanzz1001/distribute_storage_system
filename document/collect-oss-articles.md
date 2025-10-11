@@ -37,3 +37,24 @@
 - [minio warp](https://github.com/minio/warp)
 
 - [crushstore参考](https://github.com/andrewchambers/crushstore.git)
+
+
+
+# pathEscape
+
+```go
+// urlPathEscape escapes URL path the in string using URL escaping rules
+//
+// This mimics url.PathEscape which only available from go 1.8
+func urlPathEscape(in string) string {
+	var u url.URL
+	u.Path = in
+	return u.String()
+}
+
+// pathEscape escapes s as for a URL path.  It uses rest.URLPathEscape
+// but also escapes '+' for S3 and Digital Ocean spaces compatibility
+func pathEscape(s string) string {
+	return strings.ReplaceAll(urlPathEscape(s), "+", "%2B")
+}
+```
